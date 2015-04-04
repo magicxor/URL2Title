@@ -1,0 +1,60 @@
+object FormMain: TFormMain
+  Left = 0
+  Top = 0
+  Caption = 'URL2Title'
+  ClientHeight = 424
+  ClientWidth = 640
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  DesignerMasterStyle = 0
+  object SplitterTB: TSplitter
+    Align = Top
+    Cursor = crVSplit
+    MinSize = 20.000000000000000000
+    Position.Y = 225.000000000000000000
+    Size.Width = 640.000000000000000000
+    Size.Height = 20.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object PanelInput: TPanel
+    Align = Top
+    Size.Width = 640.000000000000000000
+    Size.Height = 225.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    object ButtonGetTitles: TButton
+      Align = Bottom
+      Position.Y = 190.000000000000000000
+      Size.Width = 640.000000000000000000
+      Size.Height = 35.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      Text = 'Get titles'
+      OnClick = ButtonGetTitlesClick
+    end
+    object MemoURLs: TMemo
+      Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+      Align = Client
+      Size.Width = 640.000000000000000000
+      Size.Height = 190.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 2
+    end
+  end
+  object PanelOutput: TPanel
+    Align = Client
+    Size.Width = 640.000000000000000000
+    Size.Height = 179.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 3
+    object MemoResult: TMemo
+      Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+      Align = Client
+      Size.Width = 640.000000000000000000
+      Size.Height = 179.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+    end
+  end
+end
