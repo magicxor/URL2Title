@@ -8,7 +8,7 @@ uses
   FMX.Memo, Xml.xmldom, Xml.XMLIntf, Xml.XMLDoc, IdBaseComponent, IdComponent, IdTCPConnection,
   IdTCPClient, IdHTTP, Generics.Collections, System.Generics.Defaults, System.RegularExpressions,
   System.NetEncoding, System.Math, IdIOHandler, IdIOHandlerSocket, IdIOHandlerStack, IdSSL,
-  IdSSLOpenSSL {, UrlMon};
+  IdSSLOpenSSL, FMX.ScrollBox, FMX.Controls.Presentation {, UrlMon};
 
 type
   TTitle = record
@@ -74,6 +74,7 @@ var
   FinalListOfTitle: TList<TTitle>; // NOT thread-safe generic list of TTitle
   Comparison: TComparison<TTitle>; // Custom generic comparator of TTitle
   aTitle: TTitle; // Title (temp var)
+  CRLFconst: string;
 const
   timeout   = 5000; // 5 seconds
   useragent = 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:36.0) Gecko/20100101 Firefox/36.0'; // FF 36
@@ -151,9 +152,15 @@ begin
               on E: Exception do
                 if not SuccessFlag then
                 begin
+                  CRLFconst := sLineBreak;
+                  //
                   Title.FIndex := I;
                   Title.FURL := MemoURLs.Lines[I];
-                  Title.FTitle := TRegEx.Replace(E.ClassName + ': ' + E.Message, sLineBreak, ' ') ;
+                  Title.FTitle := TRegEx.Replace(E.ClassName + ': ' + E.Message, sLineBreak, ' ');
+                  // for Windows
+                  Title.FTitle := TRegEx.Replace(E.ClassName + ': ' + E.Message,
+                    CRLFconst.Substring(CRLFconst.Length - 1), ' ');
+                  // for OS X and Android
                   AddToThreadList(Title);
                 end;
             end;

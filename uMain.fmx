@@ -35,11 +35,14 @@ object FormMain: TFormMain
     end
     object MemoURLs: TMemo
       Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+      DataDetectorTypes = []
       Align = Client
       Size.Width = 640.000000000000000000
       Size.Height = 190.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 2
+      Viewport.Width = 636.000000000000000000
+      Viewport.Height = 186.000000000000000000
     end
   end
   object PanelOutput: TPanel
@@ -50,11 +53,14 @@ object FormMain: TFormMain
     TabOrder = 3
     object MemoResult: TMemo
       Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+      DataDetectorTypes = []
       Align = Client
       Size.Width = 640.000000000000000000
       Size.Height = 179.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 1
+      Viewport.Width = 636.000000000000000000
+      Viewport.Height = 175.000000000000000000
     end
   end
 end

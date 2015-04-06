@@ -19,7 +19,8 @@ In order to compile this sources on Windows, you need to install the Embarcadero
 
 ### Known bugs
 
-- On Android and OS X platforms unicode domains do not resolve correctly.
+- On Android and OS X platforms unicode domains do not resolve correctly;
+- Multiline exceptions on OS X platform.
 
 ### Пожертвования / Donate
 
