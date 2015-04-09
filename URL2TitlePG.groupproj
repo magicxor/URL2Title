@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{5C99E3DE-140E-4091-A7BA-9090C3B9F5E8}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="URL2Title.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Test\URL2TitleTests.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="URL2Title">
+        <MSBuild Projects="URL2Title.dproj"/>
+    </Target>
+    <Target Name="URL2Title:Clean">
+        <MSBuild Projects="URL2Title.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="URL2Title:Make">
+        <MSBuild Projects="URL2Title.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="URL2TitleTests">
+        <MSBuild Projects="Test\URL2TitleTests.dproj"/>
+    </Target>
+    <Target Name="URL2TitleTests:Clean">
+        <MSBuild Projects="Test\URL2TitleTests.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="URL2TitleTests:Make">
+        <MSBuild Projects="Test\URL2TitleTests.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="URL2Title;URL2TitleTests"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="URL2Title:Clean;URL2TitleTests:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="URL2Title:Make;URL2TitleTests:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

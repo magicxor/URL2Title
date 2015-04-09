@@ -15,7 +15,7 @@ Get list of page titles from list of URLs
 
 ### Compilation guide
 
-In order to compile this sources on Windows, you need to install the Embarcadero RAD Studio XE7 Update 1 environment.
+In order to compile this sources on Windows, you need to install the Embarcadero RAD Studio XE8 environment.
 
 ### Known bugs
 
