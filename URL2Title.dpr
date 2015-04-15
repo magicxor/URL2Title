@@ -4,7 +4,7 @@ uses
   System.StartUpCopy,
   FMX.Forms,
   FMX.Types,
-  uMain in 'uMain.pas' {FormMain} ,
+  uMain in 'uMain.pas' {FormMain},
   uWebScraper in 'uWebScraper.pas',
   uUserAgent in 'uUserAgent.pas';
 
