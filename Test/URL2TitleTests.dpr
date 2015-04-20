@@ -15,10 +15,11 @@ program URL2TitleTests;
 {$ENDIF}
 
 uses
-  TestuWebScraper in 'TestuWebScraper.pas',
+  TestuWebScraper in 'TestuWebScraper.pas' {$R *.RES},
   uWebScraper in '..\uWebScraper.pas',
   uUserAgent in '..\uUserAgent.pas',
-  DUnitTestRunner;
+  DUnitTestRunner,
+  Delphi.Mocks.Helpers in 'Delphi.Mocks.Helpers.pas';
 
 {$R *.RES}
 

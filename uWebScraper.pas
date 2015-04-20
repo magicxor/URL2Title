@@ -18,6 +18,11 @@ uses
   System.Math, System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   System.Threading;
 
+{$IFDEF DEBUG}
+{$RTTI EXPLICIT METHODS([vcPrivate, vcProtected, vcPublic, vcPublished])} // + RTTI for private ...
+{$ELSE}
+{$ENDIF}
+
 type
   /// <summary>
   /// Represents a single web page element.
@@ -62,18 +67,20 @@ type
     class procedure IdHTTP1Redirect(Sender: TObject; var dest: string; var NumRedirect: Integer;
       var Handled: Boolean; var VMethod: string);
     /// <summary>
-    ///   Get page title using IdHTTP component.
+    /// Get page title using IdHTTP component.
     /// </summary>
-    class function GetTitleByIdHTTP(const AURL: string; const I: Integer): TTitle;
+    class function GetTitleByIdHTTP(const AURL: string; const AIndex: Integer;
+      const ALineBreak: string): TTitle;
+
   const
     /// <summary>
     /// ConnectTimeout is a public Integer property that indicates the
     /// maximum number of milliseconds to wait for successful completion of a
     /// connection attempt on the client.
     /// </summary>
-    CIdTimeout         = 5000; // 5 seconds
+    CIdTimeout = 5000; // 5 seconds
     /// <summary>
-    ///   Maximum allowed number of redirects.
+    /// Maximum allowed number of redirects.
     /// </summary>
     CIdRedirectMaximum = 10;
 
@@ -102,7 +109,8 @@ begin
   Result := TRegEx.IsMatch(URL, URL_RegEx);
 end;
 
-class function TWebScraper.GetTitleByIdHTTP(const AURL: string; const I: Integer): TTitle;
+class function TWebScraper.GetTitleByIdHTTP(const AURL: string; const AIndex: Integer;
+  const ALineBreak: string): TTitle;
 var
   IdHTTP1: TIdHTTP; // HTTP
   IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL; // HTTPS
@@ -126,7 +134,7 @@ begin
       IdHTTP1.IOHandler := IdSSLIOHandlerSocketOpenSSL1;
       PageContent := IdHTTP1.Get(IdHTTP1.URL.URLEncode(AURL));
       // Auto charset
-      Result.FIndex := I;
+      Result.FIndex := AIndex;
       Result.FURL := AURL;
       // search for title tag
       Result.FTitle := TRegEx.Match(PageContent, '<title\b[^>]*>(.*?)</title>',
@@ -136,6 +144,8 @@ begin
         [roIgnoreCase, roMultiLine]);
       // decode html entities
       Result.FTitle := TNetEncoding.HTML.Decode(Result.FTitle);
+      // remove line breaks (CR+LF or LF)
+      Result.FTitle := Result.FTitle.Replace(ALineBreak, ' ');
     finally
       FreeAndNil(IdSSLIOHandlerSocketOpenSSL1);
     end;
@@ -186,7 +196,7 @@ begin
         begin
           SuccessFlag := False;
           try
-            Title := GetTitleByIdHTTP(URLStrings[I], I);
+            Title := GetTitleByIdHTTP(URLStrings[I], I, ResultStrings.LineBreak);
             AddToThreadList(Title);
           except
             on E: Exception do

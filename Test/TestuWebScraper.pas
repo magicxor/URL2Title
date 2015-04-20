@@ -16,12 +16,35 @@ uses
   Generics.Collections, IdHTTP, IdIOHandlerStack, System.SysUtils, IdTCPConnection,
   System.Generics.Defaults, IdTCPClient, System.UITypes, System.Classes,
   IdIOHandlerSocket, IdComponent, System.Types, IdBaseComponent, IdSSL, IdIOHandler,
-  System.Math, System.NetEncoding, System.RegularExpressions;
+  System.Math, System.NetEncoding, System.RegularExpressions, System.Rtti;
 
 type
-  // Test methods for class TWebScraper
+  TTestMethodSet = record // One test case for one method: params and result
+    FTestParams: TArray<TValue>;
+    FTestResult: TValue;
+    constructor Create(ATestParams: TArray<TValue>; ATestResult: TValue);
+  end;
+
+  // All test cases for one method: MethodName, All TestMethodSets
+  TTestClassSuite = TDictionary<string, TArray<TTestMethodSet>>;
+
+  TestTWebScraperParameterized = class(TTestCase)
+    // Test methods for class TWebScraper
+  strict private
+    FWebScraper: TWebScraper;
+    FMethodName: string;
+    FTestMethodSet: TTestMethodSet;
+    constructor Create(MethodName, AMethodName: string; ATestMethodSet: TTestMethodSet);
+  public
+    procedure SetUp; override;
+    procedure TearDown; override;
+    class function CreateTest(AMethodName: string; ATestMethodSet: TTestMethodSet): ITestSuite;
+  published
+    procedure TestFunction;
+  end;
 
   TestTWebScraper = class(TTestCase)
+    // Test methods for class TWebScraper
   strict private
     FWebScraper: TWebScraper;
   public
@@ -31,11 +54,13 @@ type
     procedure TestGetTitlesFromURLs;
   end;
 
+var
+  UTestClassSuite: TTestClassSuite;
+
 const
-  URLsToTest: TArray<string> = [
-  'http://stackoverflow.com/',        // HTTP with EN title
+  URLsToTest: TArray<string> = ['http://stackoverflow.com/', // HTTP with EN title
   'http://habrahabr.ru/interesting/', // HTTP with RU title
-  'http://www.yandex.ru/',            // HTTP with RU title
+  'http://www.yandex.ru/', // HTTP with RU title
 
   'https://encrypted.google.com/', // HTTPS with EN title
   'https://www.youtube.com/',      // HTTPS with EN title
@@ -61,6 +86,78 @@ const
 
 implementation
 
+uses Delphi.Mocks.Helpers;
+
+constructor TestTWebScraperParameterized.Create(MethodName, AMethodName: string;
+  ATestMethodSet: TTestMethodSet);
+begin
+  inherited Create(MethodName);
+  FMethodName := AMethodName;
+  FTestMethodSet := ATestMethodSet;
+end;
+
+class function TestTWebScraperParameterized.CreateTest(AMethodName: string;
+  ATestMethodSet: TTestMethodSet): ITestSuite;
+var
+  i: Integer;
+  Test: TestTWebScraperParameterized;
+  MethodEnumerator: TMethodEnumerator;
+  MethodName: string;
+  s: string;
+  tmp: TValue;
+begin
+  s := '';
+  for tmp in ATestMethodSet.FTestParams do
+    s := s + tmp.ToString + ', ';
+  Result := TTestSuite.Create(AMethodName + '(' + s.Trim.TrimRight([',']) + ')');
+  MethodEnumerator := TMethodEnumerator.Create(Self);
+  try
+    for i := 0 to MethodEnumerator.MethodCount - 1 do
+    begin
+      MethodName := MethodEnumerator.NameOfMethod[i];
+      Test := TestTWebScraperParameterized.Create(MethodName, AMethodName, ATestMethodSet);
+      Result.addTest(Test as ITest);
+    end;
+  finally
+    MethodEnumerator.Free;
+  end;
+end;
+
+procedure TestTWebScraperParameterized.SetUp;
+begin
+  FWebScraper := TWebScraper.Create;
+end;
+
+procedure TestTWebScraperParameterized.TearDown;
+begin
+  FreeAndNil(FWebScraper);
+end;
+
+procedure TestTWebScraperParameterized.TestFunction;
+var
+  RttiContext: TRttiContext;
+  RttiType: TRttiType;
+  RttiMethod: TRttiMethod;
+  TempTValue: TValue;
+  TempStr: string;
+begin
+  RttiContext := TRttiContext.Create;
+  RttiType := RttiContext.GetType(TWebScraper);
+  for RttiMethod in RttiType.GetMethods do
+    if (FMethodName = RttiMethod.Name) and (RttiMethod.IsClassMethod) then
+    begin
+      TempStr := '';
+      for TempTValue in FTestMethodSet.FTestParams do
+        TempStr := TempStr + TempTValue.ToString + ' ';
+      //
+      TempTValue := RttiMethod.Invoke(TWebScraper, FTestMethodSet.FTestParams);
+      //
+      CheckTrue(FTestMethodSet.FTestResult.Equals(TempTValue), 'В методе ' + RttiMethod.ToString +
+        ' при параметрах ' + TempStr + ' ожидался результат ' + FTestMethodSet.FTestResult.ToString
+        + ', а получен ' + TempTValue.ToString + '.');
+    end;
+end;
+
 procedure TestTWebScraper.SetUp;
 begin
   FWebScraper := TWebScraper.Create;
@@ -68,25 +165,26 @@ end;
 
 procedure TestTWebScraper.TearDown;
 begin
-  FWebScraper.Free;
-  FWebScraper := nil;
+  FreeAndNil(FWebScraper);
 end;
 
 procedure TestTWebScraper.TestGetTitlesFromURLs;
 var
   URLStrings: TStringList;
   ResultStrings: TStringList;
-  s: string;
+  TempStr: string;
 begin
   URLStrings := TStringList.Create;
-  for s in URLsToTest do
-    URLStrings.Add(s);
+
+  for TempStr in URLsToTest do
+    URLStrings.Add(TempStr);
   try
     ResultStrings := TStringList.Create;
     try
       FWebScraper.GetTitlesFromURLs(URLStrings, ResultStrings);
       // Validate method results
-      (URLStrings.Count = ResultStrings.Count);
+      CheckEquals(URLStrings.Count, ResultStrings.Count, 'URLStrings.Count = ' +
+        URLStrings.Count.ToString + ', but ResultStrings.Count = ' + ResultStrings.Count.ToString);
     finally
       FreeAndNil(ResultStrings);
     end;
@@ -95,9 +193,45 @@ begin
   end;
 end;
 
+{ TTestMethodSet }
+
+constructor TTestMethodSet.Create(ATestParams: TArray<TValue>; ATestResult: TValue);
+begin
+  FTestParams := ATestParams;
+  FTestResult := ATestResult;
+end;
+
+function UnitTests: ITestSuite;
+var
+  Pair: TPair<string, TArray<TTestMethodSet>>;
+  Value: TTestMethodSet;
+begin
+  Result := TTestSuite.Create('Tests of private methods');
+  for Pair in UTestClassSuite.ToArray do
+    for Value in Pair.Value do
+      Result.addTest(TestTWebScraperParameterized.CreateTest(Pair.Key, Value));
+end;
+
 initialization
+
+UTestClassSuite := TTestClassSuite.Create;
+
+// Test sets for "IsValidURL_RegEx" method
+UTestClassSuite.Add('IsValidURL_RegEx', [TTestMethodSet.Create(['http://[2a00:1450:4010:c08::8a]/'],
+  True), TTestMethodSet.Create(['http://гугл.рф'], True), TTestMethodSet.Create(['http://💩.la'],
+  True), TTestMethodSet.Create(['http://a'], False), TTestMethodSet.Create(['http://ya.ru'], True),
+  TTestMethodSet.Create(['test'], False), TTestMethodSet.Create([''], False)]);
+
+// Test sets for "IsValidURL_RegEx" method
+UTestClassSuite.Add('GetTitleByIdHTTP', [TTestMethodSet.Create(['http://[2a00:1450:4010:c08::8a]/',
+  0, sLineBreak], 'Google'), TTestMethodSet.Create(['http://гугл.рф', 0, sLineBreak], 'Google')]);
 
 // Register any test cases with the test runner
 RegisterTest(TestTWebScraper.Suite);
+RegisterTest('Parameterized tests', UnitTests);
+
+finalization
+
+FreeAndNil(UTestClassSuite);
 
 end.
