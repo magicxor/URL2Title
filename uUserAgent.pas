@@ -14,13 +14,13 @@ type
     /// <summary>
     ///   Get random UserAgent of any browser
     /// </summary>
-    /// <param name="ABrowserIndex">
-    ///   Index of array in CFullUAList
+    /// <param name="ABrowser">
+    ///   Index of array in C_ALL_UA
     /// </param>
     /// <remarks>
-    ///   ABrowserIndex = (CFirefoxIndex, CChromeIndex)
+    ///   ABrowser = (C_FIREFOX_UA, C_CHROME_UA)
     /// </remarks>
-    class function GetRandomAnyBrowserUA(ABrowserIndex: integer): string;
+    class function GetRandomAnyBrowserUA(ABrowser: integer): string;
   public
     /// <summary>
     ///   Get random UserAgent
@@ -38,18 +38,18 @@ type
 
 const
   /// <summary>
-  ///   Index of Firefox UA list in CFullUAList
+  ///   Index of Firefox UA list in C_ALL_UA
   /// </summary>
-  CFirefoxIndex = 0;
+  C_FIREFOX_UA = 0;
   /// <summary>
-  ///   Index of Chrome UA list in CFullUAList
+  ///   Index of Chrome UA list in C_ALL_UA
   /// </summary>
-  CChromeIndex  = 1;
+  C_CHROME_UA  = 1;
 
   /// <summary>
   ///   List of real UserAgent strings
   /// </summary>
-  CFullUAList: TArray < TArray < string >> = [
+  C_ALL_UA: TArray < TArray < string >> = [
   // from useragentstring.com
   // Firefox UA
     ['Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0',
@@ -99,26 +99,26 @@ uses System.StrUtils;
 
 { TUserAgentManager }
 
-class function TUserAgent.GetRandomAnyBrowserUA(ABrowserIndex: integer): string;
+class function TUserAgent.GetRandomAnyBrowserUA(ABrowser: integer): string;
 begin
-  Result := RandomFrom(CFullUAList[ABrowserIndex]);
+  Result := RandomFrom(C_ALL_UA[ABrowser]);
 end;
 
 class function TUserAgent.GetRandomChromeUA: string;
 begin
-  GetRandomAnyBrowserUA(CChromeIndex);
+  GetRandomAnyBrowserUA(C_CHROME_UA);
 end;
 
 class function TUserAgent.GetRandomFirefoxUA: string;
 begin
-  GetRandomAnyBrowserUA(CFirefoxIndex);
+  GetRandomAnyBrowserUA(C_FIREFOX_UA);
 end;
 
 class function TUserAgent.GetRandomUA: string;
 var
   ABrowserIndex: integer;
 begin
-  ABrowserIndex := Random(Length(CFullUAList));
+  ABrowserIndex := Random(Length(C_ALL_UA));
   Result := GetRandomAnyBrowserUA(ABrowserIndex);
 end;
 
