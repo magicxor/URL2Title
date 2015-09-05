@@ -1,0 +1,93 @@
+object FormMain: TFormMain
+  Left = 0
+  Top = 0
+  Caption = 'URL2Title'
+  ClientHeight = 424
+  ClientWidth = 640
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  DesignerMasterStyle = 0
+  object GridPanelLayout: TGridPanelLayout
+    Align = Client
+    Margins.Left = 3.000000000000000000
+    Margins.Top = 3.000000000000000000
+    Margins.Right = 3.000000000000000000
+    Margins.Bottom = 3.000000000000000000
+    Size.Width = 634.000000000000000000
+    Size.Height = 418.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 3
+    ColumnCollection = <
+      item
+        Value = 100.000000000000000000
+      end>
+    ControlCollection = <
+      item
+        Column = 0
+        Control = ButtonGetTitles
+        Row = 1
+      end
+      item
+        Column = 0
+        Control = MemoResult
+        Row = 2
+      end
+      item
+        Column = 0
+        Control = MemoURLs
+        Row = 0
+      end>
+    RowCollection = <
+      item
+        Value = 50.000000000000000000
+      end
+      item
+        SizeStyle = Absolute
+        Value = 30.000000000000000000
+      end
+      item
+        Value = 50.000000000000000000
+      end
+      item
+        SizeStyle = Auto
+      end
+      item
+        SizeStyle = Auto
+      end>
+    object ButtonGetTitles: TButton
+      Align = Client
+      ControlType = Platform
+      Size.Width = 634.000000000000000000
+      Size.Height = 30.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      Text = 'Get titles '#9660
+      OnClick = ButtonGetTitlesClick
+    end
+    object MemoResult: TMemo
+      Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+      DataDetectorTypes = []
+      Align = Client
+      ControlType = Platform
+      Size.Width = 634.000000000000000000
+      Size.Height = 194.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      Viewport.Width = 630.000000000000000000
+      Viewport.Height = 190.000000000000000000
+    end
+    object MemoURLs: TMemo
+      Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+      DataDetectorTypes = []
+      Align = Client
+      ControlType = Platform
+      Size.Width = 634.000000000000000000
+      Size.Height = 194.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 2
+      Viewport.Width = 630.000000000000000000
+      Viewport.Height = 190.000000000000000000
+    end
+  end
+end
