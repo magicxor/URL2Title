@@ -3,7 +3,7 @@ Get list of page titles from list of URLs
 
 ### Screenshots
 
-![Windows Screenshot](https://habrastorage.org/files/c9d/ad0/c5f/c9dad0c5fbd649859d2326b5affc95aa.png)
+![Windows Screenshot](https://habrastorage.org/files/97c/00b/910/97c00b910d8442efb1fd832cb3bdc84e.png)
 ![OS X Screenshot](http://habrastorage.org/files/0eb/210/c0d/0eb210c0debb46318a3682751a14beae.png)
 ![Android Screenshot](http://habrastorage.org/files/910/46b/ba9/91046bba952149559ab11146bfad97af.png)
 
