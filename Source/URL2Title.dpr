@@ -6,12 +6,7 @@ uses
   FMX.Types,
   uMain in 'uMain.pas' {FormMain},
   uWebScraper in 'uWebScraper.pas',
-  uUserAgent in 'uUserAgent.pas',
-  {$IFDEF MSWINDOWS}
-  dorPunyCode in 'dorPunyCode.pas'
-  {$ELSE}
-  dorPunyCodeCap in 'dorPunyCodeCap.pas'
-  {$ENDIF};
+  uUserAgent in 'uUserAgent.pas';
 
 {$R *.res}
 

@@ -2,26 +2,17 @@
 /// This unit can be used for getting the list of page titles by the list of
 /// URLs
 /// </summary>
-/// <seealso cref="IdHTTP">
-/// Indy HTTP component
-/// </seealso>
 unit uWebScraper;
 
 interface
 
 uses
-  // Indy
-  IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient, IdHTTP, IdIOHandler,
-  IdIOHandlerSocket, IdIOHandlerStack, IdSSL, IdSSLOpenSSL, IdURI, IdGlobal,
   // System
-  Generics.Collections, System.Generics.Defaults, System.RegularExpressions, System.NetEncoding,
-  System.Math, System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
-  System.Threading, System.Net.URLClient;
-
-{$IFDEF DEBUG}
-{$RTTI EXPLICIT METHODS([vcPrivate, vcProtected, vcPublic, vcPublished])} // + RTTI for private ...
-{$ELSE}
-{$ENDIF}
+  Generics.Collections, System.Generics.Defaults, System.RegularExpressions,
+  System.NetEncoding,
+  System.Math, System.SysUtils, System.Types, System.UITypes, System.Classes,
+  System.Variants,
+  System.Threading, System.Net.URLClient, System.Net.HttpClientComponent;
 
 type
   /// <summary>
@@ -61,15 +52,9 @@ type
     /// </param>
     class function IsValidURL_RegEx(const URL: string): Boolean;
     /// <summary>
-    /// Milliseconds to wait for successful completion of a connection
-    /// attempt / a read operation.
+    /// Get page title
     /// </summary>
-    class procedure IdHTTP1Redirect(Sender: TObject; var dest: string; var NumRedirect: Integer;
-      var Handled: Boolean; var VMethod: string);
-    /// <summary>
-    /// Get page title using IdHTTP component.
-    /// </summary>
-    class function GetTitleByIdHTTP(const AURL: string; const AIndex: Integer;
+    class function GetPageTitle(const AURL: string; const AIndex: Integer;
       const ALineBreak: string): TTitle;
 
   const
@@ -93,14 +78,7 @@ type
 
 implementation
 
-uses uUserAgent, {$IFDEF MSWINDOWS}dorPunyCode{$ELSE}dorPunyCodeCap{$ENDIF};
-
-class procedure TWebScraper.IdHTTP1Redirect(Sender: TObject; var dest: string;
-  var NumRedirect: Integer; var Handled: Boolean; var VMethod: string);
-// handling HTTP(S) redirects (302 and so on)
-begin
-  Handled := True;
-end;
+uses uUserAgent;
 
 class function TWebScraper.IsValidURL_RegEx(const URL: string): Boolean;
 const
@@ -109,60 +87,44 @@ begin
   Result := TRegEx.IsMatch(URL, URL_RegEx);
 end;
 
-class function TWebScraper.GetTitleByIdHTTP(const AURL: string; const AIndex: Integer;
+class function TWebScraper.GetPageTitle(const AURL: string; const AIndex: Integer;
   const ALineBreak: string): TTitle;
 var
-  IdHTTP1: TIdHTTP; // HTTP
-  IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL; // HTTPS
-  PageContent, Prepared_URL: string;
+  HttpClient: TNetHTTPClient;
+  PageContent: string;
   URI: TURI;
 begin
   Result.FIndex := -1;
   Result.FURL := 'Error';
   Result.FTitle := 'Error';
 
-  IdHTTP1 := TIdHTTP.Create(nil);
+  HttpClient := TNetHTTPClient.Create(nil);
   try
-    IdHTTP1.ConnectTimeout := CIdTimeout;
-    IdHTTP1.ReadTimeout := CIdTimeout;
-    IdHTTP1.Request.UserAgent := TUserAgent.GetRandomUA;
-    IdHTTP1.AllowCookies := True;
-    IdHTTP1.HandleRedirects := True;
-    IdHTTP1.RedirectMaximum := CIdRedirectMaximum;
-    IdHTTP1.OnRedirect := TWebScraper.IdHTTP1Redirect;
-    IdSSLIOHandlerSocketOpenSSL1 := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
-    try
-      IdHTTP1.IOHandler := IdSSLIOHandlerSocketOpenSSL1;
+    HttpClient.ConnectionTimeout := CIdTimeout;
+    HttpClient.ResponseTimeout := CIdTimeout;
+    HttpClient.UserAgent := TUserAgent.GetRandomUA;
+    HttpClient.AllowCookies := True;
+    HttpClient.HandleRedirects := True;
+    HttpClient.MaxRedirects := CIdRedirectMaximum;
 
-      if AURL.Contains('[') then // TURI.Create broken in Delphi 10 Seattle (RSP-12131)
-        Prepared_URL := AURL
-      else
-      begin
-        URI := TURI.Create(AURL);
-        URI.Host := PunycodeEncodeDomain(URI.Host); // TURI.UnicodeToIDNA broken in Delphi 10 Seattle (RSP-12099)
-        Prepared_URL := URI.ToString;
-      end;
+    URI := TURI.Create(AURL);
 
-      PageContent := IdHTTP1.Get(Prepared_URL);
-      // Auto charset
-      Result.FIndex := AIndex;
-      Result.FURL := AURL;
-      // search for title tag
-      Result.FTitle := TRegEx.Match(PageContent, '<title\b[^>]*>(.*?)</title>',
-        [roIgnoreCase, roMultiLine]).Value;
-      // remove html tags and comments
-      Result.FTitle := TRegEx.Replace(Result.FTitle, '</?[a-z][a-z0-9]*[^<>]*>|<!--.*?-->', '',
-        [roIgnoreCase, roMultiLine]);
-      // decode html entities
-      Result.FTitle := TNetEncoding.HTML.Decode(Result.FTitle);
-      // remove line breaks (CR+LF or LF)
-      Result.FTitle := Result.FTitle.Replace(ALineBreak, ' ');
-    finally
-      FreeAndNil(IdSSLIOHandlerSocketOpenSSL1);
-    end;
+    PageContent := HttpClient.Get(URI.ToString).ContentAsString;
+    // Auto charset
+    Result.FIndex := AIndex;
+    Result.FURL := AURL;
+    // search for title tag
+    Result.FTitle := TRegEx.Match(PageContent, '<title\b[^>]*>(.*?)</title>',
+      [roIgnoreCase, roMultiLine]).Value;
+    // remove html tags and comments
+    Result.FTitle := TRegEx.Replace(Result.FTitle, '</?[a-z][a-z0-9]*[^<>]*>|<!--.*?-->', '',
+      [roIgnoreCase, roMultiLine]);
+    // decode html entities
+    Result.FTitle := TNetEncoding.HTML.Decode(Result.FTitle);
+    // remove line breaks (CR+LF or LF)
+    Result.FTitle := Result.FTitle.Replace(ALineBreak, ' ');
   finally
-    IdHTTP1.Disconnect;
-    FreeAndNil(IdHTTP1);
+    FreeAndNil(HttpClient);
   end;
 end;
 
@@ -207,7 +169,7 @@ begin
         begin
           SuccessFlag := False;
           try
-            Title := GetTitleByIdHTTP(URLStrings[I], I, ResultStrings.LineBreak);
+            Title := GetPageTitle(URLStrings[I], I, ResultStrings.LineBreak);
             AddToThreadList(Title);
           except
             on E: Exception do
